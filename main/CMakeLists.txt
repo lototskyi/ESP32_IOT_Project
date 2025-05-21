@@ -2,7 +2,7 @@
 # for more information about component CMakeLists.txt files.
 
 idf_component_register(
-    SRCS main.c rgb_ws2812.c wifi_app.c http_server.c      # list the source files of this component
+    SRCS main.c rgb_ws2812.c wifi_app.c http_server.c DHT22.c     # list the source files of this component
     INCLUDE_DIRS        # optional, add here public include directories
     PRIV_INCLUDE_DIRS   # optional, add here private include directories
     REQUIRES            # optional, list the public requirements (component names)
