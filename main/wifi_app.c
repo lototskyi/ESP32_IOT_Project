@@ -12,6 +12,7 @@
 #include "esp_log_level.h"
 #include "esp_netif.h"
 #include "esp_netif_types.h"
+#include "esp_now.h"
 #include "esp_wifi_default.h"
 #include "esp_wifi_types_generic.h"
 #include "freertos/FreeRTOS.h"
@@ -33,6 +34,12 @@
 
 // Tag used for ESP serial console messages
 static const char TAG[] = "wifi_app";
+
+// Used for returning the WiFi configuration
+wifi_config_t *wifi_config = NULL;
+
+// Used to track the number for retries when a connection attempt fails
+static int g_retry_number;
 
 // Queue handle use to manipulate the main queue of events
 static QueueHandle_t wifi_app_queue_handle;
@@ -78,12 +85,27 @@ esp_netif_t* esp_netif_ap = NULL;
 			 	
 			 case WIFI_EVENT_STA_DISCONNECTED:
 			 	ESP_LOGI(TAG, "WIFI_EVENT_STA_DISCONNECTED");
+			 	
+			 	wifi_event_sta_disconnected_t *wifi_event_sta_disconnected = (wifi_event_sta_disconnected_t*)malloc(sizeof(wifi_event_sta_disconnected_t));
+			 	*wifi_event_sta_disconnected = *((wifi_event_sta_disconnected_t*)event_data);
+			 	printf("WIFI_EVENT_STA_DISCONNECTED, reason code %d\n", wifi_event_sta_disconnected->reason);
+			 	
+			 	if (g_retry_number < MAX_CONNECTION_RETRIES) {
+					esp_wifi_connect();
+					g_retry_number++;
+				} else {
+					wifi_app_send_message(WIFI_APP_MSG_STA_DISCONNECTED);
+				}
+			 	
 			 	break;
 		 }
 	 } else if (event_base == IP_EVENT) {
 		 switch(event_id) {
 			 case IP_EVENT_STA_GOT_IP:
 			 	ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
+			 	
+			 	wifi_app_send_message(WIFI_APP_MSG_STA_CONNECTED_GOT_IP);
+			 	
 			 	break;
 		 }
 	 }
@@ -162,6 +184,15 @@ static void wifi_app_soft_ap_config(void)
 }
 
 /**
+ * Connects the ESP32 to an external AP using the updated station configuration
+ */
+static void wifi_app_connect_sta(void)
+{
+	ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, wifi_app_get_wifi_config()));
+	ESP_ERROR_CHECK(esp_wifi_connect());
+}
+
+/**
  * Main task for the WiFi application 
  * @param pvParameters which can be passed to the task
  */
@@ -196,11 +227,29 @@ static void wifi_app_task(void *pvParameters)
 				case WIFI_APP_MSG_CONNECTING_FROM_HTTP_SERVER:
 					ESP_LOGI(TAG, "WIFI_APP_MSG_CONNECTING_FROM_HTTP_SERVER");
 					
+					// Attempt a connection
+					wifi_app_connect_sta();
+					
+					// Set current number of retries to zero
+					g_retry_number = 0;
+					
+					// Let the HTTP server know about the connection attempt
+					http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_INIT);
+					
 					break;
 					
 				case WIFI_APP_MSG_STA_CONNECTED_GOT_IP:
 					ESP_LOGI(TAG, "WIFI_APP_MSG_STA_CONNECTED_GOT_IP");
 					rgb_led_wifi_connected();
+					
+					http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_SUCCESS);
+					
+					break;
+					
+				case WIFI_APP_MSG_STA_DISCONNECTED:
+					ESP_LOGI(TAG, "WIFI_APP_MSG_STA_DISCONNECTED");
+					
+					http_server_monitor_send_message(HTTP_MSG_WIFI_CONNECT_FAIL);
 					
 					break;
 					
@@ -218,26 +267,34 @@ BaseType_t wifi_app_send_message(wifi_app_message_e msgID)
 	return xQueueSend(wifi_app_queue_handle, &msg, portMAX_DELAY);
 }
 
+wifi_config_t* wifi_app_get_wifi_config(void)
+{
+	return wifi_config;
+}
 
- void wifi_app_start(void)
- {
-	 configure_led();
+void wifi_app_start(void)
+{
+	configure_led();
 	 
-	 ESP_LOGI(TAG, "STARTING WIFI APPLICATION");
-	 
-	 // Start WIFI started LED
-	 rgb_led_wifi_app_started();
-	 
-	 // Disable default WIFI logging messages
-	 esp_log_level_set("wifi", ESP_LOG_NONE);
-	 
-	 // Create message queue
-	 wifi_app_queue_handle = xQueueCreate(3, sizeof(wifi_app_queue_message_t));
-	 
-	 // Start the WiFi application task
-//	 xTaskCreatePinnedToCore(&wifi_app_task, "wifi_app_task", WIFI_APP_TASK_STACK_SIZE, NULL, WIFI_APP_TASK_PRIORITY, NULL, WIFI_APP_TASK_CORE_ID);
-	 xTaskCreate(&wifi_app_task, "wifi_app_task", WIFI_APP_TASK_STACK_SIZE, NULL, WIFI_APP_TASK_PRIORITY, NULL);
- }
+	ESP_LOGI(TAG, "STARTING WIFI APPLICATION");
+	
+	// Start WIFI started LED
+	rgb_led_wifi_app_started();
+		 
+	// Disable default WIFI logging messages
+	esp_log_level_set("wifi", ESP_LOG_NONE);
+		 
+	// Allocate memory for the WiFi configuration
+	wifi_config = (wifi_config_t*)malloc(sizeof(wifi_config_t));
+	memset(wifi_config, 0x00, sizeof(wifi_config_t));
+		 
+	// Create message queue
+	wifi_app_queue_handle = xQueueCreate(3, sizeof(wifi_app_queue_message_t));
+		 
+	// Start the WiFi application task
+	//	 xTaskCreatePinnedToCore(&wifi_app_task, "wifi_app_task", WIFI_APP_TASK_STACK_SIZE, NULL, WIFI_APP_TASK_PRIORITY, NULL, WIFI_APP_TASK_CORE_ID);
+	xTaskCreate(&wifi_app_task, "wifi_app_task", WIFI_APP_TASK_STACK_SIZE, NULL, WIFI_APP_TASK_PRIORITY, NULL);
+}
  
  
  

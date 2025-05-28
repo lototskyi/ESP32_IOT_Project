@@ -10,6 +10,7 @@
 
 #include "esp_netif.h"
 #include "esp_netif_types.h"
+#include "esp_wifi_types_generic.h"
 #include "portmacro.h"
 
 // WIFI application settings
@@ -41,7 +42,7 @@ typedef enum wifi_app_message
 	WIFI_APP_MSG_START_HTTP_SERVER = 0,
 	WIFI_APP_MSG_CONNECTING_FROM_HTTP_SERVER,
 	WIFI_APP_MSG_STA_CONNECTED_GOT_IP,
-	
+	WIFI_APP_MSG_STA_DISCONNECTED
 } wifi_app_message_e;
 
 /** 
@@ -59,11 +60,16 @@ typedef struct wifi_app_queue_message
  * @return pdTRUE if an item was successfully sent to the queue, otherwise pdFALSE
  * @note Expand the parameter list based on your requirements e.g. how you've expanded the wifi_app_queue_message_t
  */
- BaseType_t wifi_app_send_message(wifi_app_message_e msgID);
+BaseType_t wifi_app_send_message(wifi_app_message_e msgID);
 
 /** 
  * Starts the WIFI RTOS task
  */
- void wifi_app_start(void);
+void wifi_app_start(void);
+ 
+/** 
+ * Gets the WiFi configuration
+ */
+wifi_config_t* wifi_app_get_wifi_config(void);
 
 #endif /* MAIN_WIFI_APP_H_ */
