@@ -15,6 +15,10 @@ $(document).ready(function(){
     $("#connect_wifi").on("click", function() {
         checkCredentials();
     });
+    
+    $("#disconnect_wifi").on("click", function() {
+        disconnectWiFi();
+    });
 });   
 
 /**
@@ -272,5 +276,20 @@ function getConnectInfo()
         
         document.getElementById('disconnect_wifi').style.display = 'block';
     });
+}
+/**
+ * Disconnect WiFi once the disconnect button is pressed and reload the web page
+ */
+function disconnectWiFi()
+{
+    $.ajax({
+        url: '/wifiDisconnect.json',
+        dataType: 'json',
+        method: 'DELETE',
+        cache: false,
+        data: { 'timestamp': Date.now() }
+    });
+    // Update the web page
+    setTimeout("location.reload(true);", 200);
 }
 
