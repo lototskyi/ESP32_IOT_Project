@@ -38,6 +38,11 @@ h4 {
 	color: red;
 }
 
+#local_time {
+	display:inline;
+	color: #1d3557;
+}
+
 #latest_firmware, #latest_firmware_label {
 	display:inline;
 }

@@ -37,6 +37,7 @@ typedef enum http_server_message
 	HTTP_MSG_WIFI_USER_DISCONNECT,
 	HTTP_MSG_OTA_UPDATE_SUCCESSFUL,
 	HTTP_MSG_OTA_UPDATE_FAILED,
+	HTTP_MSG_TIME_SERVICE_INITIALIZED,
 } http_server_message_e;
 
 /**
