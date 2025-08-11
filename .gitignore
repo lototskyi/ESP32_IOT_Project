@@ -1,5 +1,6 @@
 build/
 sdkconfig
 sdkconfig.old
+esp-aws-iot-v3.1/
 esp-aws-iot/
 main/certs/
