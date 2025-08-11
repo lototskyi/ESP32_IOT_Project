@@ -12,8 +12,11 @@ Name the folder for AWS IOT SDK
 ```
 esp-aws-iot/
 ```
-Link to download old version of AWS IoT SDK [ESP AWS IoT v3.1.x](https://github.com/espressif/esp-aws-iot/tree/release/v3.1.x)
-Link to download new version of AWS IoT SDK [ESP AWS IoT](https://github.com/espressif/esp-aws-iot)
+Link to download old version of AWS IoT SDK [ESP AWS IoT v3.1.x](https://github.com/espressif/esp-aws-iot/tree/release/v3.1.x).  
+Link to download new version of AWS IoT SDK [ESP AWS IoT](https://github.com/espressif/esp-aws-iot).  
 
-For old SDK in sdkconfig in AWS settings you should provide Client ID (name of Thing in AWS IoT Core) and endpoint (Domain name in AWS IoT Core)
-For new SDK in sdkconfig in Example configuration section you should provide Client ID (name of Thing in AWS IoT Core) and endpoint (Domain name in AWS IoT Core)
+For old SDK in sdkconfig in AWS settings you should provide Client ID (name of Thing in AWS IoT Core) and endpoint (Domain name in AWS IoT Core).  
+For new SDK in sdkconfig in Example configuration section you should provide Client ID (name of Thing in AWS IoT Core) and endpoint (Domain name in AWS IoT Core).  
+
+aws_iot.c and aws_iot.h files are used for old SDK version.  
+For new SDK version example esp-aws-iot/examples/mqtt/tls_mutual_auth is used (some files from this example that are added to the main/ and are commited).
