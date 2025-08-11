@@ -1,11 +1,15 @@
-ESP-IDF template app
-====================
+# WiFi based application on the ESP32 and Subscribe/Publish MQTT Messages to AWS IoT using ESP-IDF & FreeRTOS
 
-This is a template application to be used with [Espressif IoT Development Framework](https://github.com/espressif/esp-idf).
 
-Please check [ESP-IDF docs](https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html) for getting started instructions.
 
-*Code in this repository is in the Public Domain (or CC0 licensed, at your option.)
-Unless required by applicable law or agreed to in writing, this
-software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-CONDITIONS OF ANY KIND, either express or implied.*
+> An example of WiFi based application using the ESP-IDF (Espressif IoT Development Framework), Integrating an ESP-IDF Components & Sensors Library and configuring the ESP32 to connect to AWS IoT and Publish/Subscribe messages via AWS IoT Core using the MQTT protocol.
+>
+Keep certificates in:
+```
+main/certs
+```
+Name the folder for AWS IOT SDK
+```
+esp-aws-iot/
+```
+Link to download old version of AWS IoT SDK [Markdown Live Preview](https://github.com/espressif/esp-aws-iot/tree/release/v3.1.x)
